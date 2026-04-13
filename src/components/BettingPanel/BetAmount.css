@@ -1,0 +1,94 @@
+.bet-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bet-amount__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bet-amount__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.bet-amount__max {
+    font-size: 11px;
+    color: var(--color-text-muted);
+}
+
+.bet-amount__row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.bet-amount__input-wrap {
+    position: relative;
+    flex: 1;
+}
+
+.bet-amount__input {
+    width: 100%;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 28px 8px 10px;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    transition: border-color var(--transition-fast);
+}
+
+.bet-amount__input:focus {
+    border-color: var(--color-blue);
+}
+
+.bet-amount__input:disabled {
+    opacity: 0.5;
+}
+
+/* Прибираємо стрілки number input */
+.bet-amount__input::-webkit-outer-spin-button,
+.bet-amount__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.bet-amount__currency {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+.bet-amount__buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.bet-amount__btn {
+    flex: 1;
+    padding: 6px 4px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.bet-amount__btn:hover:not(:disabled) {
+    background: var(--color-border-hover);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
