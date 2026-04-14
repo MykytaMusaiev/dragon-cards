@@ -1,0 +1,18 @@
+.sound-toggle {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    backdrop-filter: blur(4px);
+}
+
+.sound-toggle:hover {
+    background: rgba(0, 0, 0, 0.7);
+}

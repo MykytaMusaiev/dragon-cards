@@ -1,6 +1,7 @@
-import { useGameStore, selectIsControlsLocked } from '../../shared/store/gameStore';
+import { useGameStore } from '../../shared/store/gameStore';
 import { MAX_BET } from '../../shared/config/gameConfig';
 import './BetAmount.css';
+import { selectIsControlsLocked } from '../../shared/store/selectors';
 
 export default function BetAmount() {
   const betAmount = useGameStore((s) => s.betAmount);
@@ -10,7 +11,18 @@ export default function BetAmount() {
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = parseFloat(e.target.value);
-    if (!isNaN(raw)) setBetAmount(raw);
+    if (!isNaN(raw)) {
+      setBetAmount(raw);
+    } else if (e.target.value === '') {
+      setBetAmount(0); // Тимчасово дозволяємо 0
+    }
+  };
+
+  // Валідація значення при втраті фокусу (щоб не залишалося 0)
+  const handleBlur = () => {
+    if (betAmount < 1) {
+      setBetAmount(1);
+    }
   };
 
   const handleHalf = () => setBetAmount(Math.max(1, betAmount / 2));
@@ -19,36 +31,55 @@ export default function BetAmount() {
 
   return (
     <div className="bet-amount">
+      {/* Оновлений заголовок: валюта тепер тут */}
       <div className="bet-amount__header">
-        <span className="bet-amount__label">Bet Amount</span>
-        <span className="bet-amount__max">Max Bet: {MAX_BET.toFixed(2)}</span>
-      </div>
-
-      <div className="bet-amount__row">
-        <div className="bet-amount__input-wrap">
-          <input
-            className="bet-amount__input"
-            type="number"
-            min={1}
-            max={Math.min(MAX_BET, balance)}
-            value={betAmount}
-            onChange={handleInput}
-            disabled={isLocked}
-          />
-          <span className="bet-amount__currency">$</span>
+        <div className="bet-amount__title-wrap">
+          <span className="bet-amount__label">Bet Amount</span>
+          <span className="bet-amount__max-label">
+            Max: <span className="bet-amount__max-value">{MAX_BET.toFixed(2)}</span>
+          </span>
         </div>
+        <span className="bet-amount__currency-label">$</span>
       </div>
 
-      <div className="bet-amount__buttons">
-        <button className="bet-amount__btn" onClick={handleHalf} disabled={isLocked}>
-          1/2
-        </button>
-        <button className="bet-amount__btn" onClick={handleDouble} disabled={isLocked}>
-          x2
-        </button>
-        <button className="bet-amount__btn" onClick={handleMax} disabled={isLocked}>
-          Max
-        </button>
+      {/* Поле вводу з внутрішніми кнопками */}
+      <div className={`bet-amount__field-group ${isLocked ? 'bet-amount__field-group--locked' : ''}`}>
+        <input
+          className="bet-amount__input"
+          type="number"
+          step="0.01"
+          min={1}
+          max={Math.min(MAX_BET, balance)}
+          value={betAmount === 0 ? '' : betAmount}
+          onChange={handleInput}
+          onBlur={handleBlur}
+          disabled={isLocked}
+        />
+
+        {/* Блок кнопок, як на зразку */}
+        <div className="bet-amount__inner-actions">
+          <button
+            className="bet-amount__tile-btn"
+            onClick={handleHalf}
+            disabled={isLocked}
+          >
+            1/2
+          </button>
+          <button
+            className="bet-amount__tile-btn"
+            onClick={handleDouble}
+            disabled={isLocked}
+          >
+            x2
+          </button>
+          <button
+            className="bet-amount__tile-btn bet-amount__tile-btn--max"
+            onClick={handleMax}
+            disabled={isLocked}
+          >
+            Max
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
-import { useGameStore, selectIsControlsLocked } from '../../shared/store/gameStore';
+import { useGameStore } from '../../shared/store/gameStore';
 import { RISK_CONFIG } from '../../shared/config/gameConfig';
 import type { RiskLevel } from '../../shared/types';
 import './RiskSelector.css';
+import { selectIsControlsLocked } from '../../shared/store/selectors';
 
 const RISK_LEVELS: RiskLevel[] = ['low', 'medium', 'high', 'classic'];
 

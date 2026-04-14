@@ -6,99 +6,86 @@ import {
     REVEAL_DELAY_MS,
     REVEAL_DURATION_MS,
 } from "../config/gameConfig";
-import type {
-    BottomCard,
-    GamePhase,
-    GameState,
-    RiskLevel,
-    RoundResult,
-} from "../types";
-import { calculatePayout, generateCards } from "../utils/gameLogic";
+import type { GameStore, PersistedState, RoundResult } from "../types";
+import {
+    calculateResult,
+    generateBadges,
+    generateCards,
+    generateIdleDeck,
+} from "../utils/gameLogic";
+import { GAME_PHASES } from "../const";
 
-interface GameActions {
-    // Betting panel
-    setBetAmount: (amount: number) => void;
-    setRisk: (risk: RiskLevel) => void;
-    placeBet: () => void;
-
-    // Placement phase
-    reorderBottomCards: (cards: BottomCard[]) => void;
-    selectBottomCard: (id: string | null) => void;
-    swapBottomCards: (idA: string, idB: string) => void;
-    confirmPlacement: () => void;
-
-    // Revealing phase — викликається з компонента після анімацій
-    startRevealing: () => void;
-
-    // General
-    setPhase: (phase: GamePhase) => void;
-    toggleSound: () => void;
-    resetRound: () => void;
-}
-
-type GameStore = GameState & GameActions;
-
-// ─── Persisted keys ──────────────────────────────────────────────────────────
-// Зберігаємо тільки UI-налаштування і баланс.
-// Ігровий стан (картки, фаза) — завжди скидається при оновленні сторінки.
-
-type PersistedState = Pick<
-    GameState,
-    "balance" | "betAmount" | "risk" | "isSoundEnabled"
->;
+const idleDeck = generateIdleDeck();
 
 export const useGameStore = create<GameStore>()(
     persist(
         (set, get) => ({
-            // ─── Initial State ─────────────────────────────────────────────────
+            // --- State ---
             balance: INITIAL_BALANCE,
             betAmount: 1,
             risk: "classic",
-            phase: "idle",
-            topCards: [],
-            bottomCards: [],
+            phase: GAME_PHASES.IDLE,
+            topCards: idleDeck.topCards,
+            bottomCards: idleDeck.bottomCards,
+            badges: generateBadges("classic"),
             selectedBottomCardId: null,
             result: null,
             isSoundEnabled: true,
 
-            // ─── Betting Panel ─────────────────────────────────────────────────
+            // --- Actions ---
             setBetAmount: (amount) => {
-                const { balance } = get();
+                const { balance, phase } = get();
+                if (phase === GAME_PHASES.REVEALING) return;
                 const clamped = Math.min(Math.max(amount, 1), MAX_BET, balance);
                 set({ betAmount: Math.round(clamped * 100) / 100 });
             },
 
-            setRisk: (risk) => set({ risk }),
+            setRisk: (risk) => {
+                const { phase } = get();
+                if (phase === GAME_PHASES.REVEALING) return;
+                set({ risk, badges: generateBadges(risk) });
+            },
 
             placeBet: () => {
-                const { balance, betAmount, risk, phase } = get();
-                if (phase !== "idle") return;
+                const { balance, betAmount, phase, bottomCards } = get();
+                if (phase === GAME_PHASES.REVEALING) return;
                 if (betAmount > balance || betAmount <= 0) return;
 
-                const { topCards, bottomCards } = generateCards(risk);
+                const newDeck = generateCards();
 
                 set({
                     balance: Math.round((balance - betAmount) * 100) / 100,
-                    topCards,
-                    bottomCards,
+                    topCards: newDeck.topCards,
+                    bottomCards: bottomCards, // Зберігаємо поточну розстановку гравця
                     selectedBottomCardId: null,
                     result: null,
-                    phase: "placement",
+                    phase: GAME_PHASES.PLACEMENT,
                 });
             },
 
-            // ─── Placement Phase ───────────────────────────────────────────────
-            reorderBottomCards: (cards) => set({ bottomCards: cards }),
+            reorderBottomCards: (cards) => {
+                const { phase } = get();
+                const extra =
+                    phase === GAME_PHASES.RESULT
+                        ? { phase: GAME_PHASES.IDLE, result: null }
+                        : {};
+                set({ bottomCards: cards, ...extra });
+            },
 
             selectBottomCard: (id) => {
                 const { phase } = get();
-                if (phase !== "placement") return;
-                set({ selectedBottomCardId: id });
+                if (phase === GAME_PHASES.REVEALING) return;
+
+                const extra =
+                    phase === GAME_PHASES.RESULT
+                        ? { phase: GAME_PHASES.IDLE, result: null }
+                        : {};
+                set({ selectedBottomCardId: id, ...extra });
             },
 
             swapBottomCards: (idA, idB) => {
                 const { bottomCards, phase } = get();
-                if (phase !== "placement") return;
+                if (phase === GAME_PHASES.REVEALING) return;
 
                 const cards = [...bottomCards];
                 const indexA = cards.findIndex((c) => c.id === idA);
@@ -106,108 +93,81 @@ export const useGameStore = create<GameStore>()(
                 if (indexA === -1 || indexB === -1) return;
 
                 [cards[indexA], cards[indexB]] = [cards[indexB], cards[indexA]];
-                set({ bottomCards: cards, selectedBottomCardId: null });
-            },
 
-            confirmPlacement: () => {
-                const { phase } = get();
-                if (phase !== "placement") return;
-                set({ phase: "revealing", selectedBottomCardId: null });
-            },
-
-            // ─── Revealing Phase ───────────────────────────────────────────────
-            // Запускає послідовне розкриття карток і фіналізує результат.
-            // Викликається один раз після confirmPlacement.
-            startRevealing: () => {
-                const { topCards, betAmount, phase } = get();
-                if (phase !== "revealing") return;
-
-                topCards.forEach((_, index) => {
-                    setTimeout(() => {
-                        // Розкриваємо картку після завершення flip анімації
-                        const delay =
-                            index * (REVEAL_DURATION_MS + REVEAL_DELAY_MS);
-
-                        setTimeout(() => {
-                            const current = get();
-                            const updated = current.topCards.map((card, i) =>
-                                i === index
-                                    ? { ...card, isRevealed: true }
-                                    : card,
-                            );
-                            set({ topCards: updated });
-
-                            // Після останньої картки — фіналізуємо результат
-                            if (index === topCards.length - 1) {
-                                setTimeout(() => {
-                                    const final = get();
-
-                                    let totalPayout = 0;
-                                    let didWin = false;
-                                    let bestMultiplier: RoundResult["multiplier"] =
-                                        "LOST";
-
-                                    final.topCards.forEach((topCard, i) => {
-                                        if (topCard.value !== "LOST") {
-                                            const bottomCard =
-                                                final.bottomCards[i];
-                                            if (bottomCard?.value !== "LOST") {
-                                                const payout = calculatePayout(
-                                                    betAmount,
-                                                    bottomCard.value,
-                                                );
-                                                totalPayout += payout;
-                                                didWin = true;
-                                                // Зберігаємо найбільший множник для відображення
-                                                if (
-                                                    bestMultiplier === "LOST" ||
-                                                    (bottomCard.value as number) >
-                                                        (bestMultiplier as number)
-                                                ) {
-                                                    bestMultiplier =
-                                                        bottomCard.value;
-                                                }
-                                            }
-                                        }
-                                    });
-
-                                    const result: RoundResult = {
-                                        didWin,
-                                        multiplier: bestMultiplier,
-                                        payout:
-                                            Math.round(totalPayout * 100) / 100,
-                                    };
-
-                                    set({
-                                        result,
-                                        balance:
-                                            Math.round(
-                                                (final.balance + totalPayout) *
-                                                    100,
-                                            ) / 100,
-                                        phase: "result",
-                                    });
-                                }, REVEAL_DURATION_MS);
-                            }
-                        }, delay);
-                    }, 0);
+                const extra =
+                    phase === GAME_PHASES.RESULT
+                        ? { phase: GAME_PHASES.IDLE, result: null }
+                        : {};
+                set({
+                    bottomCards: cards,
+                    selectedBottomCardId: null,
+                    ...extra,
                 });
             },
 
-            // ─── General ──────────────────────────────────────────────────────
+            confirmPlacement: () => {
+                set({
+                    phase: GAME_PHASES.REVEALING,
+                    selectedBottomCardId: null,
+                });
+            },
+
+            startRevealing: () => {
+                const { topCards, phase } = get();
+                if (phase !== GAME_PHASES.REVEALING) return;
+
+                topCards.forEach((_, index) => {
+                    const delay =
+                        index * (REVEAL_DURATION_MS + REVEAL_DELAY_MS);
+                    setTimeout(() => {
+                        const current = get();
+                        const updated = current.topCards.map((card, i) =>
+                            i === index ? { ...card, isRevealed: true } : card,
+                        );
+                        set({ topCards: updated });
+
+                        if (index === topCards.length - 1) {
+                            setTimeout(() => {
+                                const final = get();
+                                const result: RoundResult = calculateResult(
+                                    final.topCards,
+                                    final.bottomCards,
+                                    final.badges,
+                                    final.betAmount,
+                                );
+                                set({
+                                    result,
+                                    balance:
+                                        Math.round(
+                                            (final.balance +
+                                                result.totalPayout) *
+                                                100,
+                                        ) / 100,
+                                    phase: GAME_PHASES.RESULT,
+                                });
+                            }, REVEAL_DURATION_MS);
+                        }
+                    }, delay);
+                });
+            },
+
             setPhase: (phase) => set({ phase }),
 
             toggleSound: () =>
                 set((state) => ({ isSoundEnabled: !state.isSoundEnabled })),
 
-            resetRound: () =>
+            resetRound: () => {
+                const { risk } = get();
+                const idleDeck = generateIdleDeck();
                 set({
-                    phase: "idle",
-                    topCards: [],
-                    bottomCards: [],
+                    phase: GAME_PHASES.IDLE,
+                    topCards: idleDeck.topCards,
+                    bottomCards: idleDeck.bottomCards,
+                    badges: generateBadges(risk),
                     selectedBottomCardId: null,
                     result: null,
-                }),
+                });
+            },
         }),
         {
             name: "dragon-cards-storage",
@@ -220,30 +180,3 @@ export const useGameStore = create<GameStore>()(
         },
     ),
 );
-
-// ─── Selectors ────────────────────────────────────────────────────────────────
-
-export const selectIsControlsLocked = (state: GameStore): boolean =>
-    state.phase === "placement" || state.phase === "revealing";
-
-export const selectCanPlaceBet = (state: GameStore): boolean =>
-    state.phase === "idle" &&
-    state.betAmount > 0 &&
-    state.betAmount <= state.balance &&
-    state.betAmount <= MAX_BET;
-
-export const selectIsPlacementPhase = (state: GameStore): boolean =>
-    state.phase === "placement";
-
-export const selectWinningPairs = (state: GameStore): Set<number> => {
-    if (state.phase !== "result" && state.phase !== "revealing")
-        return new Set();
-    const pairs = new Set<number>();
-    state.topCards.forEach((topCard, i) => {
-        if (topCard.isRevealed && topCard.value !== "LOST") {
-            const bottomCard = state.bottomCards[i];
-            if (bottomCard?.value !== "LOST") pairs.add(i);
-        }
-    });
-    return pairs;
-};

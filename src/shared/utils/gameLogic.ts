@@ -1,15 +1,16 @@
 import { CARD_COUNT, DRAGON_TYPES, RISK_CONFIG } from "../config/gameConfig";
+import { LOST_TITLE } from "../const";
 import type {
     BottomCard,
     CardValue,
     DragonType,
+    MatchResult,
     RiskLevel,
+    RoundResult,
     TopCard,
 } from "../types";
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
-
-function shuffle<T>(array: T[]): T[] {
+export function shuffle<T>(array: T[]): T[] {
     const result = [...array];
     for (let i = result.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -31,53 +32,91 @@ function pickDragons(count: number): DragonType[] {
     return shuffle(result);
 }
 
-// ─── Card Generation ───────────────────────────────────────────────────────
+// Генерує badges для поточного ризику — фіксовані значення позицій
+export function generateBadges(risk: RiskLevel): CardValue[] {
+    const config = RISK_CONFIG[risk];
+    const values: CardValue[] = [
+        ...Array(config.lostCount).fill(LOST_TITLE),
+        ...config.multipliers.slice(0, CARD_COUNT - config.lostCount),
+    ];
+    return shuffle(values);
+}
 
-export function generateCards(risk: RiskLevel): {
+// Idle deck — декоративний, без ігрового значення
+export function generateIdleDeck(): {
     topCards: TopCard[];
     bottomCards: BottomCard[];
 } {
-    const config = RISK_CONFIG[risk];
+    const topDragons = shuffle([...DRAGON_TYPES]);
+    const bottomDragons = shuffle([...DRAGON_TYPES]);
 
-    // Будуємо масив значень: N LOST + решта множників
-    const winMultipliers = shuffle([...config.multipliers]).slice(
-        0,
-        CARD_COUNT - config.lostCount,
-    );
-
-    const values: CardValue[] = [
-        ...Array(config.lostCount).fill("LOST"),
-        ...winMultipliers,
-    ];
-
-    const shuffledValues = shuffle(values);
-    const topDragons = pickDragons(CARD_COUNT);
-    const bottomDragons = pickDragons(CARD_COUNT);
-
-    const topCards: TopCard[] = shuffledValues.map((value, i) => ({
-        id: `top-${generateId()}`,
-        dragonType: topDragons[i],
-        value,
+    const topCards: TopCard[] = topDragons.map((dragonType) => ({
+        id: `top-idle-${generateId()}`,
+        dragonType,
         isRevealed: false,
     }));
 
-    // Нижні картки мають ті ж значення але перемішані — гравець не знає відповідності
-    const bottomValues = shuffle([...shuffledValues]);
-    const bottomCards: BottomCard[] = bottomValues.map((value, i) => ({
-        id: `bot-${generateId()}`,
-        dragonType: bottomDragons[i],
-        value,
+    const bottomCards: BottomCard[] = bottomDragons.map((dragonType) => ({
+        id: `bot-idle-${generateId()}`,
+        dragonType,
     }));
 
     return { topCards, bottomCards };
 }
 
-// ─── Win Calculation ───────────────────────────────────────────────────────
+// картки раунду
+export function generateCards(): {
+    topCards: TopCard[];
+    bottomCards: BottomCard[];
+} {
+    const topDragons = pickDragons(CARD_COUNT);
+    const bottomDragons = pickDragons(CARD_COUNT);
 
-export function calculatePayout(
+    const topCards: TopCard[] = topDragons.map((dragonType) => ({
+        id: `top-${generateId()}`,
+        dragonType,
+        isRevealed: false,
+    }));
+
+    const bottomCards: BottomCard[] = bottomDragons.map((dragonType) => ({
+        id: `bot-${generateId()}`,
+        dragonType,
+    }));
+
+    return { topCards, bottomCards };
+}
+
+// Фінальний розрахунок після розкриття
+export function calculateResult(
+    topCards: TopCard[],
+    bottomCards: BottomCard[],
+    badges: CardValue[],
     betAmount: number,
-    multiplier: CardValue,
-): number {
-    if (multiplier === "LOST") return 0;
-    return Math.round(betAmount * multiplier * 100) / 100;
+): RoundResult {
+    const matches: MatchResult[] = [];
+
+    topCards.forEach((topCard, i) => {
+        const bottomCard = bottomCards[i];
+        if (topCard.dragonType === bottomCard.dragonType) {
+            matches.push({
+                index: i,
+                badgeValue: badges[i],
+                isWin: badges[i] !== LOST_TITLE,
+            });
+        }
+    });
+
+    // Якщо хоча б одне співпадіння на LOST — програш
+    const hasLostMatch = matches.some((m) => !m.isWin);
+    if (hasLostMatch || matches.length === 0) {
+        return { didWin: false, totalPayout: 0, matches };
+    }
+
+    // Всі співпадіння на множниках — сумуємо
+    const totalPayout = matches.reduce((sum, m) => {
+        const multiplier = m.badgeValue as number;
+        return sum + Math.round(betAmount * multiplier * 100) / 100;
+    }, 0);
+
+    return { didWin: true, totalPayout, matches };
 }
