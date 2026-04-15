@@ -5,6 +5,8 @@ export const INITIAL_BALANCE = 100_000;
 export const CARD_COUNT = 6;
 export const REVEAL_DELAY_MS = 300;
 export const REVEAL_DURATION_MS = 600;
+export const REVEAL_SOUND_DELAY = REVEAL_DELAY_MS + REVEAL_DURATION_MS;
+export const JACKPOT_MULTIPLIER = 10;
 
 export const RISK_CONFIG: RiskConfigMap = {
     low: {

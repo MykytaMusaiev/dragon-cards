@@ -1,37 +1,45 @@
+import type { DraggableAttributes } from '@dnd-kit/core';
+import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 import { DRAGON_LABELS } from '../../shared/const';
 import type { CardProps } from '../../shared/types';
 import './Card.css';
 
+interface DraggableCardComponentProps extends Omit<CardProps, 'onDragStart' | 'onDragOver' | 'onDrop' | 'isDragging'> {
+  attributes?: DraggableAttributes;
+  listeners?: SyntheticListenerMap;
+  isGhost?: boolean;
+}
 
 export default function Card({
   dragonType,
   isFaceDown = false,
   isRevealed = false,
   isSelected = false,
-  isDragging = false,
   isDropTarget = false,
   draggable = false,
+  isGhost = false,
   onClick,
-  onDragStart,
-  onDragOver,
-  onDrop,
-}: CardProps) {
+  attributes,
+  listeners,
+}: DraggableCardComponentProps) {
+  const containerClasses = [
+    'card',
+    isFaceDown && 'card--flippable',
+    isRevealed && 'card--revealed',
+    isSelected && 'card--selected',
+    isGhost && 'card--ghost',
+    isDropTarget && 'card--drop-target',
+    draggable && 'card--draggable',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
-      className={[
-        'card',
-        isFaceDown ? 'card--flippable' : '',
-        isRevealed ? 'card--revealed' : '',
-        isSelected ? 'card--selected' : '',
-        isDragging ? 'card--dragging' : '',
-        isDropTarget ? 'card--drop-target' : '',
-        draggable ? 'card--draggable' : '',
-      ].filter(Boolean).join(' ')}
+      className={containerClasses}
       onClick={onClick}
-      draggable={draggable}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
+      {...attributes}
+      {...listeners}
     >
       <div className="card__inner">
         <div className="card__face card__face--back">

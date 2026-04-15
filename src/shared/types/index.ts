@@ -37,6 +37,26 @@ export interface CardRowProps {
     type: "top" | "bottom";
 }
 
+export interface DraggableCardProps {
+    card: BottomCard;
+    isPlacementActive: boolean;
+    isSelected: boolean;
+    isSwapping: boolean;
+    isGhost: boolean;
+    onClick: () => void;
+}
+
+export interface DraggableCardWrapperProps {
+    card: BottomCard;
+    isPlacementActive: boolean;
+    isSelected: boolean;
+    isWin: boolean;
+    isLose: boolean;
+    isSwapping: boolean;
+    onClick: () => void;
+    domRef: (node: HTMLDivElement | null) => void;
+}
+
 // ─── Risk ──────────────────────────────────────────────────────────────────
 
 export type RiskLevel = "low" | "medium" | "high" | "classic";
