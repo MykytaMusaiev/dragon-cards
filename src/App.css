@@ -1,15 +1,26 @@
 .app-layout {
     display: flex;
     width: 100%;
-    height: 100%;
+    /* Обмежуємо ширину, щоб інтерфейс не "розповзався" */
+    max-width: 1280px;
+    /* Фіксуємо висоту або робимо її залежною від контенту */
+    height: 800px;
+    max-height: 70vh;
+
+    margin: auto; /* Центруємо по вертикалі та горизонталі */
     overflow: hidden;
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); /* Додаємо глибини */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1020px) {
     .app-layout {
         flex-direction: column-reverse;
+        height: auto;
+        max-height: 100vh;
+        overflow-y: auto;
         border-radius: var(--radius-md);
     }
 }

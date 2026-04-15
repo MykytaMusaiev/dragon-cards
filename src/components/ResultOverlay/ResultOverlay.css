@@ -110,7 +110,6 @@
     }
 }
 
-/* --- Fade-out state --- */
 .result-overlay--leaving {
     animation: overlay-fade-out 0.4s ease forwards;
     cursor: default;
@@ -121,7 +120,6 @@
     animation: card-pop-out 0.35s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
 }
 
-/* скидаємо staggered entry-анімації щоб не конфліктували */
 .result-overlay--leaving .result-overlay__icon,
 .result-overlay--leaving .result-overlay__title,
 .result-overlay--leaving .result-overlay__amount {

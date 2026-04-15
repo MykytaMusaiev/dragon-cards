@@ -1,61 +1,71 @@
-.card-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
+:root {
+    --card-aspect-ratio: 3 / 5;
+    --card-gap: 12px;
+    --container-padding: 24px;
+    --card-max-width: 120px;
+    --badge-offset: 38px;
+    --transition-normal: 0.2s ease;
+}
+
+.card-row-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--card-gap);
     justify-content: center;
-    position: relative;
-    z-index: 1;
+    width: 100%;
+    max-width: 750px;
+    margin: 0 auto;
 }
 
-/*
-  Wrapper — зовнішній контейнер для FLIP анімації.
-  transform керується через JS (useLayoutEffect), не CSS transition,
-  тому тут немає transition на transform.
-*/
-.card-column-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.card-slot {
     position: relative;
-}
-
-/* ─── Внутрішня колонка: картка ─── */
-.card-column {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-/* ─── Swap bounce (click-to-swap) ─── */
-.card-column--swapping {
-    animation: swap-bounce 0.3s ease;
+.card-slot__card-container {
+    width: 100%;
 }
 
-@keyframes swap-bounce {
-    0% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-16px);
-    }
-    100% {
-        transform: translateY(0);
+@supports not (aspect-ratio: 3 / 5) {
+    .card-slot__card-container {
+        height: 0;
+        padding-bottom: 166.66%; /* (5/3) * 100% */
     }
 }
 
-/*
-  DragOverlay wrapper — центрує картку відносно курсора
-  і додає підйом + тінь щоб підкреслити що картка "в руці".
-*/
-.card-drag-overlay {
-    transform: scale(1.06) rotate(2deg);
-    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6));
-    cursor: grabbing;
-    transform-origin: center center;
+@media (max-width: 768px) {
+    :root {
+        --card-gap: 8px;
+        --container-padding: 16px;
+    }
 }
 
-@media (max-width: 600px) {
-    .card-row {
-        gap: 5px;
+@media (max-width: 480px) {
+    :root {
+        --card-gap: 4px;
+        --badge-offset: 25px;
     }
+}
+
+.card-slot__badge-outer {
+    position: absolute;
+    top: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
+    width: 90%;
+    display: flex;
+    justify-content: center;
+}
+
+.card-slot__badge {
+    font-size: clamp(8px, 2vw, 12px);
+    padding: 2px 6px;
+    min-width: unset;
+    width: 100%;
+    max-width: fit-content;
 }

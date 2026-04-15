@@ -12,15 +12,45 @@ import type { DragEndEvent, DragStartEvent, DraggableAttributes } from '@dnd-kit
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 
 import { useGameStore } from '../../shared/store/gameStore';
-import type { CardRowProps, DraggableCardProps } from '../../shared/types';
-import Card from '../Card/Card';
+import { LOST_TITLE } from '../../shared/const';
 import {
   selectIsPlacementActive,
+  selectLosingIndices,
+  selectWinningIndices,
 } from '../../shared/store/selectors';
+import type { CardRowProps, DraggableCardProps, CardValue, TopCard, BottomCard } from '../../shared/types';
+import Card from '../Card/Card';
 import { useSound } from '../../shared/hooks/useSound';
 import './CardRow.css';
+import { CARD_COUNT } from '../../shared/config/gameConfig';
 
 
+export const CARD_SWAP_ANIMATION_DURATION_MS = 300;
+
+
+function ValueBadge({
+  value,
+  isWin,
+  isLose,
+}: {
+  value: CardValue;
+  isWin: boolean;
+  isLose: boolean;
+}) {
+  const isLost = value === LOST_TITLE;
+  let className = 'card-slot__badge';
+
+  if (isWin) className += ' card-slot__badge--matched-win';
+  else if (isLose) className += ' card-slot__badge--matched-lose';
+  else if (isLost) className += ' card-slot__badge--lost';
+  else className += ' card-slot__badge--win';
+
+  return (
+    <div className={className}>
+      {isLost ? LOST_TITLE : `${value}x`}
+    </div>
+  );
+}
 
 function DraggableCard({
   card,
@@ -54,8 +84,8 @@ function DraggableCard({
     <div
       ref={setCombinedRef}
       className={[
-        'card-column',
-        isSwapping ? 'card-column--swapping' : '',
+        'draggable-card-wrapper',
+        isSwapping ? 'draggable-card-wrapper--swapping' : '',
       ].filter(Boolean).join(' ')}
     >
       <Card
@@ -72,10 +102,13 @@ function DraggableCard({
   );
 }
 
-
 export default function CardRow({ type }: CardRowProps) {
   const topCards = useGameStore((s) => s.topCards);
   const bottomCards = useGameStore((s) => s.bottomCards);
+  const badges = useGameStore((s) => s.badges);
+  const winningIndices = useGameStore(selectWinningIndices);
+  const losingIndices = useGameStore(selectLosingIndices);
+
   const selectedBottomCardId = useGameStore((s) => s.selectedBottomCardId);
   const selectBottomCard = useGameStore((s) => s.selectBottomCard);
   const swapBottomCards = useGameStore((s) => s.swapBottomCards);
@@ -89,6 +122,12 @@ export default function CardRow({ type }: CardRowProps) {
 
   const wrapperRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  );
 
   const captureRects = () => {
     const rects = new Map<string, DOMRect>();
@@ -126,14 +165,6 @@ export default function CardRow({ type }: CardRowProps) {
     prevRectsRef.current = new Map();
   }, [bottomCards]);
 
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    })
-  );
-
-
   const handleCardClick = (id: string) => {
     if (!isPlacementActive) return;
 
@@ -147,11 +178,11 @@ export default function CardRow({ type }: CardRowProps) {
       setTimeout(() => {
         swapBottomCards(selectedBottomCardId, id);
         setSwappingIds(new Set());
-      }, 300);
+        play('drag_n_drop');
+      }, CARD_SWAP_ANIMATION_DURATION_MS);
       selectBottomCard(null);
     }
   };
-
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveDragId(event.active.id as string);
@@ -180,23 +211,7 @@ export default function CardRow({ type }: CardRowProps) {
     ? bottomCards.find((c) => c.id === activeDragId)
     : null;
 
-
-  if (type === 'top') {
-    return (
-      <div className="card-row">
-        {topCards.map((card) => (
-          <div key={card.id} className="card-column">
-            <Card
-              dragonType={card.dragonType}
-              isFaceDown
-              isRevealed={card.isRevealed}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
+  const slotIndices = Array.from({ length: CARD_COUNT }, (_, i) => i);
 
   return (
     <DndContext
@@ -204,26 +219,53 @@ export default function CardRow({ type }: CardRowProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="card-row">
-        {bottomCards.map((card) => (
-          <div
-            key={card.id}
-            className="card-column-wrapper"
-            ref={(el) => {
-              if (el) wrapperRefs.current.set(card.id, el);
-              else wrapperRefs.current.delete(card.id);
-            }}
-          >
-            <DraggableCard
-              card={card}
-              isPlacementActive={isPlacementActive}
-              isSelected={selectedBottomCardId === card.id}
-              isSwapping={swappingIds.has(card.id)}
-              isGhost={card.id === activeDragId}
-              onClick={() => handleCardClick(card.id)}
-            />
-          </div>
-        ))}
+      <div className={`card-row-grid card-row-grid--${type}`}>
+        {slotIndices.map((i) => {
+          const card = type === 'top' ? topCards[i] : bottomCards[i];
+
+          return (
+            <div key={`slot-${i}`} className="card-slot">
+              <div className="card-slot__card-container">
+                {card && (
+                  type === 'top' ? (
+                    <Card
+                      dragonType={card.dragonType}
+                      isFaceDown
+                      isRevealed={(card as TopCard).isRevealed}
+                    />
+                  ) : (
+                    <div
+                      ref={(el) => {
+                        if (el) wrapperRefs.current.set(card.id, el);
+                        else wrapperRefs.current.delete(card.id);
+                      }}
+                      className="draggable-card-anchor"
+                    >
+                      <DraggableCard
+                        card={card as BottomCard}
+                        isPlacementActive={isPlacementActive}
+                        isSelected={selectedBottomCardId === card.id}
+                        isSwapping={swappingIds.has(card.id)}
+                        isGhost={card.id === activeDragId}
+                        onClick={() => handleCardClick(card.id)}
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              {type === 'bottom' && i < CARD_COUNT && (
+                <div className="card-slot__badge-outer">
+                  <ValueBadge
+                    value={badges[i]}
+                    isWin={winningIndices.has(i)}
+                    isLose={losingIndices.has(i)}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <DragOverlay dropAnimation={null}>

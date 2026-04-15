@@ -2,7 +2,7 @@
     position: absolute;
     top: 16px;
     left: 16px;
-    z-index: 10;
+    z-index: 11;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
@@ -15,4 +15,11 @@
 
 .sound-toggle:hover {
     background: rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 1020px) {
+    .sound-toggle {
+        top: 5px;
+        left: 10px;
+    }
 }

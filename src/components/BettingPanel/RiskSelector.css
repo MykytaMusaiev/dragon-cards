@@ -32,7 +32,6 @@
     border-color: var(--color-border-hover);
 }
 
-/* Active states per risk level */
 .risk-selector__btn--low.risk-selector__btn--active {
     background: rgba(34, 197, 94, 0.15);
     border-color: var(--color-green);
@@ -46,13 +45,13 @@
 }
 
 .risk-selector__btn--high.risk-selector__btn--active {
-    background: rgba(245, 158, 11, 0.15);
-    border-color: var(--color-gold);
-    color: var(--color-gold);
-}
-
-.risk-selector__btn--classic.risk-selector__btn--active {
     background: rgba(239, 68, 68, 0.15);
     border-color: var(--color-red);
     color: var(--color-red);
+}
+
+.risk-selector__btn--classic.risk-selector__btn--active {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--color-gold);
+    color: var(--color-gold);
 }

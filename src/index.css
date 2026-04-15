@@ -37,7 +37,6 @@
     --radius-md: 10px;
     --radius-lg: 16px;
 
-    --panel-width: 300px;
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
 }
@@ -58,12 +57,27 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #05070a;
 }
 
 #root {
     width: 100%;
     height: 100%;
     max-width: 1400px;
+    padding: 20px;
+    display: flex;
+}
+
+@media (max-width: 768px) {
+    #root {
+        width: 100%;
+        height: 100%;
+        max-width: 1400px;
+    }
 }
 
 button {

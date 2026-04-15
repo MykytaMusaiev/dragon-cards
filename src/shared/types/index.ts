@@ -71,9 +71,6 @@ export type RiskConfigMap = Record<RiskLevel, RiskConfig>;
 
 // ─── Game State ────────────────────────────────────────────────────────────
 
-// TODO видалити
-// export type GamePhase = "idle" | "placement" | "revealing" | "result";
-
 export interface MatchResult {
     index: number;
     badgeValue: CardValue;
@@ -118,5 +115,5 @@ export interface GameActions {
 export type GameStore = GameState & GameActions;
 export type PersistedState = Pick<
     GameState,
-    "balance" | "betAmount" | "risk" | "isSoundEnabled"
+    "balance" | "betAmount" | "risk" | "isSoundEnabled" | "bottomCards"
 >;

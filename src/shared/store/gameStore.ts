@@ -20,7 +20,6 @@ const idleDeck = generateIdleDeck();
 export const useGameStore = create<GameStore>()(
     persist(
         (set, get) => ({
-            // --- State ---
             balance: INITIAL_BALANCE,
             betAmount: 1,
             risk: "classic",
@@ -32,7 +31,6 @@ export const useGameStore = create<GameStore>()(
             result: null,
             isSoundEnabled: true,
 
-            // --- Actions ---
             setBetAmount: (amount) => {
                 const { balance, phase } = get();
                 if (phase === GAME_PHASES.REVEALING) return;
@@ -56,7 +54,7 @@ export const useGameStore = create<GameStore>()(
                 set({
                     balance: Math.round((balance - betAmount) * 100) / 100,
                     topCards: newDeck.topCards,
-                    bottomCards: bottomCards, // Зберігаємо поточну розстановку гравця
+                    bottomCards: bottomCards,
                     selectedBottomCardId: null,
                     result: null,
                     phase: GAME_PHASES.PLACEMENT,
@@ -157,13 +155,9 @@ export const useGameStore = create<GameStore>()(
                 set((state) => ({ isSoundEnabled: !state.isSoundEnabled })),
 
             resetRound: () => {
-                const { risk } = get();
-                const idleDeck = generateIdleDeck();
                 set({
                     phase: GAME_PHASES.IDLE,
                     topCards: idleDeck.topCards,
-                    bottomCards: idleDeck.bottomCards,
-                    badges: generateBadges(risk),
                     selectedBottomCardId: null,
                     result: null,
                 });
@@ -176,6 +170,7 @@ export const useGameStore = create<GameStore>()(
                 betAmount: state.betAmount,
                 risk: state.risk,
                 isSoundEnabled: state.isSoundEnabled,
+                bottomCards: state.bottomCards,
             }),
         },
     ),

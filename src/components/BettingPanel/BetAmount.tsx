@@ -14,11 +14,10 @@ export default function BetAmount() {
     if (!isNaN(raw)) {
       setBetAmount(raw);
     } else if (e.target.value === '') {
-      setBetAmount(0); // Тимчасово дозволяємо 0
+      setBetAmount(0);
     }
   };
 
-  // Валідація значення при втраті фокусу (щоб не залишалося 0)
   const handleBlur = () => {
     if (betAmount < 1) {
       setBetAmount(1);
@@ -31,7 +30,6 @@ export default function BetAmount() {
 
   return (
     <div className="bet-amount">
-      {/* Оновлений заголовок: валюта тепер тут */}
       <div className="bet-amount__header">
         <div className="bet-amount__title-wrap">
           <span className="bet-amount__label">Bet Amount</span>
@@ -42,7 +40,6 @@ export default function BetAmount() {
         <span className="bet-amount__currency-label">$</span>
       </div>
 
-      {/* Поле вводу з внутрішніми кнопками */}
       <div className={`bet-amount__field-group ${isLocked ? 'bet-amount__field-group--locked' : ''}`}>
         <input
           className="bet-amount__input"
@@ -56,7 +53,6 @@ export default function BetAmount() {
           disabled={isLocked}
         />
 
-        {/* Блок кнопок, як на зразку */}
         <div className="bet-amount__inner-actions">
           <button
             className="bet-amount__tile-btn"
