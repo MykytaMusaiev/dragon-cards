@@ -1,0 +1,22 @@
+.balance-display {
+    display: flex;
+    flex-direction: column;
+}
+
+.balance-display__label {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.balance-display__value {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-gold);
+}
+
+@media (min-width: 1021px) {
+    .balance-display {
+        text-align: right;
+    }
+}

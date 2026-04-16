@@ -43,18 +43,6 @@
     border-top: 1px solid var(--color-border);
 }
 
-.betting-panel__balance-label {
-    font-size: 13px;
-    color: var(--color-text-muted);
-}
-
-.betting-panel__balance-value {
-    font-family: var(--font-mono);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--color-gold);
-}
-
 @media (min-width: 1021px) {
     .betting-panel {
         width: 340px;
@@ -65,11 +53,6 @@
         flex-direction: row;
         align-items: center;
         gap: 12px;
-    }
-
-    .betting-panel__balance-display {
-        flex-shrink: 0;
-        text-align: right;
     }
 
     .betting-panel__place-bet {
