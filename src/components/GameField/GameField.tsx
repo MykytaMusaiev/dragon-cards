@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { GAME_PHASES } from '../../shared/const';
 import { useGameStore } from '../../shared/store/gameStore';
 import { useSound } from '../../shared/hooks/useSound';
@@ -6,16 +6,18 @@ import CardRow from '../CardRow/CardRow';
 import ResultOverlay from '../ResultOverlay/ResultOverlay';
 import SoundToggle from '../SoundToggle/SoundToggle';
 import './GameField.css';
-import { JACKPOT_MULTIPLIER, REVEAL_SOUND_DELAY } from '../../shared/config/gameConfig';
+import { LOSE_RESET_DELAY_MS, REVEAL_SOUND_DELAY } from '../../shared/config/gameConfig';
 import BalanceDisplay from '../BalanceDisplay/BalanceDisplay';
+import { selectJackpotIndices } from '../../shared/store/selectors';
 
 export default function GameField() {
   const phase = useGameStore((s) => s.phase);
   const result = useGameStore((s) => s.result);
-  const betAmount = useGameStore((s) => s.betAmount);
+  const jackpotIndices = useGameStore(selectJackpotIndices);
+  const resetRound = useGameStore((s) => s.resetRound);
   const { play } = useSound();
 
-
+  const loseResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (phase !== GAME_PHASES.REVEALING) return;
@@ -27,13 +29,24 @@ export default function GameField() {
 
   useEffect(() => {
     if (phase !== GAME_PHASES.RESULT || !result) return;
+
     if (result.didWin) {
-      const isJackpot = result.totalPayout >= betAmount * JACKPOT_MULTIPLIER;
+      const isJackpot = jackpotIndices.size > 0;
       play(isJackpot ? 'jackpot' : 'win');
     } else {
       play('lose');
+      loseResetTimerRef.current = setTimeout(() => {
+        resetRound();
+      }, LOSE_RESET_DELAY_MS);
     }
-  }, [phase, result, play, betAmount]);
+
+    return () => {
+      if (loseResetTimerRef.current !== null) {
+        clearTimeout(loseResetTimerRef.current);
+        loseResetTimerRef.current = null;
+      }
+    };
+  }, [phase, result, play, jackpotIndices, resetRound]);
 
   return (
     <main className="game-field">

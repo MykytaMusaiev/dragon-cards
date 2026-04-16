@@ -44,6 +44,9 @@ export interface DraggableCardProps {
     isSwapping: boolean;
     isGhost: boolean;
     onClick: () => void;
+    isWin: boolean;
+    isLose: boolean;
+    isJackpot: boolean;
 }
 
 export interface DraggableCardWrapperProps {

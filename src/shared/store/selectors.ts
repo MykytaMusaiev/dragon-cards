@@ -1,5 +1,6 @@
 import { createSelector } from "reselect";
 import { GAME_PHASES } from "../const";
+import { JACKPOT_MULTIPLIER } from "../config/gameConfig";
 import type { GameStore } from "../types";
 
 const selectResult = (state: GameStore) => state.result;
@@ -16,7 +17,8 @@ export const selectIsPlacementActive = (state: GameStore): boolean =>
 export const selectWinningIndices = createSelector(
     [selectResult, selectPhase],
     (result, phase) => {
-        if (phase !== GAME_PHASES.RESULT || !result) return new Set<number>();
+        if (phase !== GAME_PHASES.RESULT || !result || !result.didWin)
+            return new Set<number>();
         return new Set(
             result.matches.filter((m) => m.isWin).map((m) => m.index),
         );
@@ -29,6 +31,23 @@ export const selectLosingIndices = createSelector(
         if (phase !== GAME_PHASES.RESULT || !result) return new Set<number>();
         return new Set(
             result.matches.filter((m) => !m.isWin).map((m) => m.index),
+        );
+    },
+);
+
+export const selectJackpotIndices = createSelector(
+    [selectResult, selectPhase],
+    (result, phase) => {
+        if (phase !== GAME_PHASES.RESULT || !result || !result.didWin)
+            return new Set<number>();
+        return new Set(
+            result.matches
+                .filter(
+                    (m) =>
+                        m.isWin &&
+                        (m.badgeValue as number) >= JACKPOT_MULTIPLIER,
+                )
+                .map((m) => m.index),
         );
     },
 );

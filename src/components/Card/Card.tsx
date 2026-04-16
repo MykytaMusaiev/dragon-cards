@@ -8,6 +8,9 @@ interface DraggableCardComponentProps extends Omit<CardProps, 'onDragStart' | 'o
   attributes?: DraggableAttributes;
   listeners?: SyntheticListenerMap;
   isGhost?: boolean;
+  isWin?: boolean;
+  isLose?: boolean;
+  isJackpot?: boolean;
 }
 
 export default function Card({
@@ -18,6 +21,9 @@ export default function Card({
   isDropTarget = false,
   draggable = false,
   isGhost = false,
+  isWin = false,
+  isLose = false,
+  isJackpot = false,
   onClick,
   attributes,
   listeners,
@@ -30,6 +36,9 @@ export default function Card({
     isGhost && 'card--ghost',
     isDropTarget && 'card--drop-target',
     draggable && 'card--draggable',
+    isJackpot && 'card--jackpot-glow',
+    isWin && !isJackpot && 'card--win-glow',
+    isLose && 'card--lose-glow',
   ]
     .filter(Boolean)
     .join(' ');
@@ -41,7 +50,7 @@ export default function Card({
       {...attributes}
       {...listeners}
     >
-      <div className="card__inner">
+      <div className="card__inner ">
         <div className="card__face card__face--back">
           <img
             src="/images/card-back.jpg"

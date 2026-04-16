@@ -17,16 +17,13 @@ import {
   selectIsPlacementActive,
   selectLosingIndices,
   selectWinningIndices,
+  selectJackpotIndices,
 } from '../../shared/store/selectors';
 import type { CardRowProps, DraggableCardProps, CardValue, TopCard, BottomCard } from '../../shared/types';
 import Card from '../Card/Card';
 import { useSound } from '../../shared/hooks/useSound';
 import './CardRow.css';
-import { CARD_COUNT } from '../../shared/config/gameConfig';
-
-
-export const CARD_SWAP_ANIMATION_DURATION_MS = 300;
-
+import { CARD_COUNT, CARD_SWAP_ANIMATION_DURATION_MS } from '../../shared/config/gameConfig';
 
 function ValueBadge({
   value,
@@ -58,6 +55,9 @@ function DraggableCard({
   isSelected,
   isSwapping,
   isGhost,
+  isWin,
+  isLose,
+  isJackpot,
   onClick,
 }: DraggableCardProps) {
   const {
@@ -94,6 +94,9 @@ function DraggableCard({
         isDropTarget={isOver && !isDragging}
         isGhost={isGhost}
         draggable={isPlacementActive}
+        isWin={isWin}
+        isLose={isLose}
+        isJackpot={isJackpot}
         onClick={onClick}
         attributes={attributes as DraggableAttributes}
         listeners={listeners as SyntheticListenerMap}
@@ -108,6 +111,7 @@ export default function CardRow({ type }: CardRowProps) {
   const badges = useGameStore((s) => s.badges);
   const winningIndices = useGameStore(selectWinningIndices);
   const losingIndices = useGameStore(selectLosingIndices);
+  const jackpotIndices = useGameStore(selectJackpotIndices);
 
   const selectedBottomCardId = useGameStore((s) => s.selectedBottomCardId);
   const selectBottomCard = useGameStore((s) => s.selectBottomCard);
@@ -232,6 +236,9 @@ export default function CardRow({ type }: CardRowProps) {
                       dragonType={card.dragonType}
                       isFaceDown
                       isRevealed={(card as TopCard).isRevealed}
+                      isWin={winningIndices.has(i)}
+                      isLose={losingIndices.has(i)}
+                      isJackpot={jackpotIndices.has(i)}
                     />
                   ) : (
                     <div
@@ -247,6 +254,9 @@ export default function CardRow({ type }: CardRowProps) {
                         isSelected={selectedBottomCardId === card.id}
                         isSwapping={swappingIds.has(card.id)}
                         isGhost={card.id === activeDragId}
+                        isWin={winningIndices.has(i)}
+                        isLose={losingIndices.has(i)}
+                        isJackpot={jackpotIndices.has(i)}
                         onClick={() => handleCardClick(card.id)}
                       />
                     </div>

@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../../shared/store/gameStore';
 import { GAME_PHASES } from '../../shared/const';
 import './ResultOverlay.css';
+import { OVERLAY_HOLD_DURATION_MS } from '../../shared/config/gameConfig';
 
-const HOLD_DURATION_MS = 1250;
+
 
 export default function ResultOverlay() {
   const phase = useGameStore((s) => s.phase);
@@ -20,7 +21,7 @@ export default function ResultOverlay() {
 
     timerRef.current = setTimeout(() => {
       setIsLeaving(true);
-    }, HOLD_DURATION_MS);
+    }, OVERLAY_HOLD_DURATION_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -40,7 +41,7 @@ export default function ResultOverlay() {
     }
   };
 
-  if (phase !== GAME_PHASES.RESULT || !result) return null;
+  if (phase !== GAME_PHASES.RESULT || !result || !result.didWin) return null;
 
   return (
     <div

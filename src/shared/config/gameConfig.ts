@@ -7,6 +7,9 @@ export const REVEAL_DELAY_MS = 150;
 export const REVEAL_DURATION_MS = 250;
 export const REVEAL_SOUND_DELAY = REVEAL_DELAY_MS + REVEAL_DURATION_MS;
 export const JACKPOT_MULTIPLIER = 10;
+export const CARD_SWAP_ANIMATION_DURATION_MS = 300;
+export const OVERLAY_HOLD_DURATION_MS = 2000;
+export const LOSE_RESET_DELAY_MS = 1500;
 
 export const RISK_CONFIG: RiskConfigMap = {
     low: {
