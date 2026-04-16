@@ -51,11 +51,9 @@ export default function GameField() {
   return (
     <main className="game-field">
       <SoundToggle />
-
       <div className="game-field__mobile-header">
         <BalanceDisplay />
       </div>
-
       <div className="game-field__content">
         <CardRow type="top" />
         <CardRow type="bottom" />
