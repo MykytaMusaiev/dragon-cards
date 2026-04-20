@@ -114,8 +114,8 @@ export function calculateResult(
 
     // Всі співпадіння на множниках — сумуємо
     const totalPayout = matches.reduce((sum, m) => {
-        const multiplier = m.badgeValue as number;
-        return sum + Math.round(betAmount * multiplier * 100) / 100;
+        if (typeof m.badgeValue !== "number") return sum;
+        return sum + Math.round(betAmount * m.badgeValue * 100) / 100;
     }, 0);
 
     return { didWin: true, totalPayout, matches };

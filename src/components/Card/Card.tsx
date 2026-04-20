@@ -53,7 +53,7 @@ export default function Card({
       <div className="card__inner ">
         <div className="card__face card__face--back">
           <img
-            src="/images/card-back.jpg"
+            src="/images/card-back.avif"
             alt="Card back"
             className="card__image"
             draggable={false}

@@ -60,6 +60,12 @@ export interface DraggableCardWrapperProps {
     domRef: (node: HTMLDivElement | null) => void;
 }
 
+export interface ValueBadgeProps {
+    value: CardValue;
+    isWin: boolean;
+    isLose: boolean;
+}
+
 // ─── Risk ──────────────────────────────────────────────────────────────────
 
 export type RiskLevel = "low" | "medium" | "high" | "classic";
@@ -110,7 +116,6 @@ export interface GameActions {
     swapBottomCards: (idA: string, idB: string) => void;
     confirmPlacement: () => void;
     startRevealing: () => void;
-    setPhase: (phase: GamePhase) => void;
     toggleSound: () => void;
     resetRound: () => void;
 }

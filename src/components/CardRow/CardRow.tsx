@@ -2,108 +2,26 @@ import { useState, useRef, useLayoutEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
-  useDraggable,
-  useDroppable,
   PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent, DraggableAttributes } from '@dnd-kit/core';
-import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 
 import { useGameStore } from '../../shared/store/gameStore';
-import { LOST_TITLE } from '../../shared/const';
 import {
   selectIsPlacementActive,
   selectLosingIndices,
   selectWinningIndices,
   selectJackpotIndices,
 } from '../../shared/store/selectors';
-import type { CardRowProps, DraggableCardProps, CardValue, TopCard, BottomCard } from '../../shared/types';
+import type { CardRowProps, BottomCard, TopCard } from '../../shared/types';
 import Card from '../Card/Card';
 import { useSound } from '../../shared/hooks/useSound';
 import './CardRow.css';
 import { CARD_COUNT, CARD_SWAP_ANIMATION_DURATION_MS } from '../../shared/config/gameConfig';
-
-function ValueBadge({
-  value,
-  isWin,
-  isLose,
-}: {
-  value: CardValue;
-  isWin: boolean;
-  isLose: boolean;
-}) {
-  const isLost = value === LOST_TITLE;
-  let className = 'card-slot__badge';
-
-  if (isWin) className += ' card-slot__badge--matched-win';
-  else if (isLose) className += ' card-slot__badge--matched-lose';
-  else if (isLost) className += ' card-slot__badge--lost';
-  else className += ' card-slot__badge--win';
-
-  return (
-    <div className={className}>
-      {isLost ? LOST_TITLE : `${value}x`}
-    </div>
-  );
-}
-
-function DraggableCard({
-  card,
-  isPlacementActive,
-  isSelected,
-  isSwapping,
-  isGhost,
-  isWin,
-  isLose,
-  isJackpot,
-  onClick,
-}: DraggableCardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setDraggableRef,
-    isDragging,
-  } = useDraggable({
-    id: card.id,
-    disabled: !isPlacementActive,
-  });
-
-  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
-    id: card.id,
-    disabled: !isPlacementActive,
-  });
-
-  const setCombinedRef = (node: HTMLElement | null) => {
-    setDraggableRef(node);
-    setDroppableRef(node);
-  };
-
-  return (
-    <div
-      ref={setCombinedRef}
-      className={[
-        'draggable-card-wrapper',
-        isSwapping ? 'draggable-card-wrapper--swapping' : '',
-      ].filter(Boolean).join(' ')}
-    >
-      <Card
-        dragonType={card.dragonType}
-        isSelected={isSelected && !isDragging}
-        isDropTarget={isOver && !isDragging}
-        isGhost={isGhost}
-        draggable={isPlacementActive}
-        isWin={isWin}
-        isLose={isLose}
-        isJackpot={isJackpot}
-        onClick={onClick}
-        attributes={attributes as DraggableAttributes}
-        listeners={listeners as SyntheticListenerMap}
-      />
-    </div>
-  );
-}
+import DraggableCard from '../DraggableCard/DraggableCard';
+import ValueBadge from '../ValueBadge/ValueBadge';
 
 export default function CardRow({ type }: CardRowProps) {
   const topCards = useGameStore((s) => s.topCards);

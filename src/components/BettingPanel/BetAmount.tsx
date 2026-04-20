@@ -14,7 +14,7 @@ export default function BetAmount() {
     if (!isNaN(raw)) {
       setBetAmount(raw);
     } else if (e.target.value === '') {
-      setBetAmount(0);
+      setBetAmount(1);
     }
   };
 

@@ -45,7 +45,8 @@ export const selectJackpotIndices = createSelector(
                 .filter(
                     (m) =>
                         m.isWin &&
-                        (m.badgeValue as number) >= JACKPOT_MULTIPLIER,
+                        typeof m.badgeValue === "number" &&
+                        m.badgeValue >= JACKPOT_MULTIPLIER,
                 )
                 .map((m) => m.index),
         );

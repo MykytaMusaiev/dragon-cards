@@ -148,9 +148,6 @@ export const useGameStore = create<GameStore>()(
                     }, delay);
                 });
             },
-
-            setPhase: (phase) => set({ phase }),
-
             toggleSound: () =>
                 set((state) => ({ isSoundEnabled: !state.isSoundEnabled })),
 
