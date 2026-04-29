@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# Dragon Cards
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A high-stakes iGaming card game built with a modern React stack. Experience a fantasy-themed risk/reward mechanic where strategy meets luck.
 
-Currently, two official plugins are available:
+[**Play Live Demo**](https://dragon-cards-blue.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Dragon Cards Gameplay](public/showcase.gif)
 
-## React Compiler
+## 🎮 Game Overview
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Dragon Cards is a logic-based betting game. Players must arrange a set of dragon cards in the bottom row to match hidden cards in the top row. The outcome depends on the chosen risk level and the accuracy of the player's predictions.
 
-## Expanding the ESLint configuration
+## 🚀 Technical Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Framework:** React 19 + Vite
+- **Language:** TypeScript (Strict mode)
+- **State Management:** Zustand (with Persist middleware)
+- **Styling:** CSS Modules & Variables (Dark Theme)
+- **Animations:** - RequestAnimationFrame (rAF) for smooth balance counters.
+    - CSS 3D Transforms for realistic card flips.
+- **Audio:** Custom hook for game sound effects with global toggle.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## ✨ Key Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Dynamic Risk System:** 4 risk levels (Low, Medium, High, Classic) with unique multiplier distributions and "LOST" card logic.
+- **Interactive Mechanics:** Click-to-swap or Drag & Drop card positioning to define your strategy.
+- **Real-time Game Logic:** Sequential card revealing with automated result calculation and payout management.
+- **Smooth UX:**
+    - Animated balance transitions.
+    - Auto-closing result overlays with a "Quick Skip" feature.
+    - LocalStorage persistence for user balance and settings.
+- **Responsive Design:** Fully optimized for mobile (375px) and desktop (1440px+) environments.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ Installation & Setup
+
+1. **Clone the repository:**
+   `bash
+    git clone [https://github.com/your-username/dragon-cards.git](https://github.com/your-username/dragon-cards.git)
+    `
+   Install dependencies:
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Run development server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm run dev
+Build for production:
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```

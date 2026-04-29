@@ -1,0 +1,25 @@
+.app-layout {
+    display: flex;
+    width: 100%;
+    max-width: 1280px;
+    min-height: 600px;
+    height: 80vh;
+    max-height: 900px;
+
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 1020px) {
+    .app-layout {
+        flex-direction: column-reverse;
+        height: auto;
+        max-height: 100vh;
+        overflow-y: auto;
+        border-radius: var(--radius-md);
+    }
+}

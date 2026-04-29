@@ -1,0 +1,74 @@
+.betting-panel {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 16px;
+    z-index: 10;
+    transition: width var(--transition-normal);
+}
+
+.betting-panel__content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.betting-panel__place-bet {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-blue);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    transition:
+        background var(--transition-fast),
+        opacity var(--transition-fast);
+    letter-spacing: 0.5px;
+}
+
+.betting-panel__place-bet:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.betting-panel__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+@media (min-width: 1021px) {
+    .betting-panel {
+        width: 340px;
+        padding: 20px 12px;
+    }
+
+    .betting-panel__footer {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .betting-panel__place-bet {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 1020px) {
+    .betting-panel {
+        width: 100%;
+        border-right: none;
+        border-top: 1px solid var(--color-border);
+        padding: 16px;
+    }
+    .betting-panel__footer {
+        display: none;
+    }
+}

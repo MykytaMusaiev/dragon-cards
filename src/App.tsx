@@ -1,11 +1,12 @@
-import './App.css'
+import './App.css';
+import BettingPanel from './components/BettingPanel/BettingPanel';
+import GameField from './components/GameField/GameField';
 
-function App() {
+export default function App() {
   return (
-    <>
-      <h1>PlaceHolder</h1>
-    </>
-  )
+    <div className="app-layout">
+      <BettingPanel />
+      <GameField />
+    </div>
+  );
 }
-
-export default App
